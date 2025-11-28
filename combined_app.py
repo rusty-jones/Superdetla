@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import smtplib
 from email.message import EmailMessage
-from transformers import pipeline
+
 import logging
 import uuid
 from reportlab.lib.pagesizes import letter
@@ -127,12 +127,6 @@ def debug_session_state():
     st.write("Debug: Session State Contents")
     st.write(st.session_state)
 
-try:
-    classifier = pipeline("text-classification", model="distilbert-base-uncased", device=-1)
-except Exception as e:
-    st.error(f"Error initializing Hugging Face classifier: {str(e)}")
-    classifier = None
-
 def validate_stocks(stocks_input):
     if not stocks_input or not isinstance(stocks_input, str):
         return [], []
@@ -141,29 +135,17 @@ def validate_stocks(stocks_input):
     valid_stocks = []
     invalid_stocks = []
     
-    if classifier:
-        for stock in stock_list:
-            if stock in valid_tickers:
-                valid_stocks.append(stock)
-            else:
-                try:
-                    result = classifier(stock)
-                    positive_score = result[0]['score'] if result[0]['label'] == 'POSITIVE' else 1 - result[0]['score']
-                    if positive_score > 0.7 and len(stock) <= 10 and stock.isupper():
-                        valid_stocks.append(stock)
-                    else:
-                        invalid_stocks.append(stock)
-                except Exception:
-                    invalid_stocks.append(stock)
-    else:
-        for stock in stock_list:
-            if stock in valid_tickers or (len(stock) <= 10 and stock.isupper() and stock.isalnum()):
-                valid_stocks.append(stock)
-            else:
-                invalid_stocks.append(stock)
+    for stock in stock_list:
+        if stock in valid_tickers or (len(stock) <= 10 and stock.isupper() and stock.isalnum()):
+            valid_stocks.append(stock)
+        else:
+            invalid_stocks.append(stock)
     
     logger.debug(f"Validated stocks: {valid_stocks}, Invalid stocks: {invalid_stocks}")
     return valid_stocks, invalid_stocks
+
+# Set classifier to None as it's not used anymore
+classifier = None
 
 # Global definitions for periods and intervals
 short_term_periods_intervals = {"1d": ["5m"], "5d": ["30m"], "1mo": ["1h", "1d"],"3mo": ["4h"]}
@@ -479,7 +461,7 @@ def generate_summary_table(clean_results, selected_intervals, return_data_only=F
                 return df  # Return DataFrame for PDF generation
             else:
                 st.markdown("<h3 style='color: #66FFCC; text-align: center;'></h3>", unsafe_allow_html=True)
-                st.dataframe(df, use_container_width=True)
+                st.dataframe(df, width=True)
         else:
             if not return_data_only:
                 st.markdown("<p style='color: #FF4D4D; text-align: center;'>No clean charts found for the selected intervals.</p>", unsafe_allow_html=True)

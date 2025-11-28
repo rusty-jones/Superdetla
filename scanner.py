@@ -226,7 +226,7 @@ def scanner_tab_ui(periods_intervals, timeframes_list, tolerance, generate_trade
 
         st.subheader(f"Tickers in {watch_list_name_manage}")
         if market_watches_manage[watch_list_name_manage]:
-            st.dataframe(pd.DataFrame(market_watches_manage[watch_list_name_manage], columns=["Ticker"] ), use_container_width=True)
+            st.dataframe(pd.DataFrame(market_watches_manage[watch_list_name_manage], columns=["Ticker"] ), width=True)
         else:
             st.write("No tickers in this market watch.")
         
@@ -305,6 +305,6 @@ def scanner_tab_ui(periods_intervals, timeframes_list, tolerance, generate_trade
             scanner_df['Target'] = scanner_df['Target'].round(2)
             scanner_df['Risk-Reward'] = scanner_df['Risk-Reward'].round(2)
             scanner_df['Confidence'] = scanner_df['Confidence'].round(1).astype(str) + '%'
-            st.dataframe(scanner_df, use_container_width=True)
+            st.dataframe(scanner_df, width=True)
         else:
             st.info("No scan has been run yet, or no trade opportunities were found in the last scan.")
